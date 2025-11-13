@@ -19,6 +19,7 @@ A Python tool that converts 2D face images to 3D OBJ models using MediaPipe's 46
 - NumPy
 - OpenCV
 - scikit-image
+- Flask (for web interface)
 
 ## Installation
 
@@ -27,6 +28,26 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### 🌐 Web Interface
+
+Launch the web application:
+
+```bash
+python app.py
+```
+
+Then open your browser at `http://localhost:5000` (or `http://localhost:8080` if port 5000 is in use).
+
+**Features:**
+- 📷 Capture photos directly from your webcam
+- 📁 Upload images via drag & drop or file picker
+- 🎨 Preview generated texture and file contents
+- 📥 Download OBJ, MTL, and texture files
+
+The web interface provides a simple, dark-themed UI for converting face images to 3D models without using the command line.
+
+### 💻 Command Line Usage
 
 ### Basic Usage
 
@@ -53,7 +74,8 @@ The script generates three files:
 
 ## Scripts
 
-- `simplified_mp_to_obj.py` - Simplified version (recommended)
+- `app.py` - **Web interface** (Flask) - Recommended for easy use
+- `simplified_mp_to_obj.py` - Command-line version (simplified)
 - `mediapipe_to_obj.py` - Full version with error handling
 - `mediapipe_to_obj_clean.py` - Clean output wrapper (filters warnings)
 

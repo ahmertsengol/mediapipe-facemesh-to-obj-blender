@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Mesh to OBJ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 0.85em;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .camera-section {
+            margin-bottom: 20px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 8px;
+            background: #0a0a0a;
+            display: none;
+            margin-bottom: 10px;
+            transform: scaleX(-1); /* Ayna efekti */
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .btn:hover {
+            background: #333;
+            border-color: #444;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #4a9eff;
+            border-color: #4a9eff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #0f0f0f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #444;
+            background: #141414;
+        }
+
+        .upload-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            margin: 0 auto 15px;
+            display: block;
+            border: 1px solid #333;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #2a2a2a;
+            border-top: 3px solid #4a9eff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #0f0f0f;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .result-title {
+            font-size: 0.9em;
+            color: #4a9eff;
+            margin-bottom: 15px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .preview-item {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .preview-item-title {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .preview-texture {
+            width: 100%;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+
+        .preview-text {
+            font-size: 0.75em;
+            color: #999;
+            font-family: 'Courier New', monospace;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #050505;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #1a1a1a;
+        }
+
+        .preview-text::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .preview-text::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .preview-text::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .download-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .download-btn {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #333;
+            border-color: #444;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+
+        .message.error {
+            background: #3a1f1f;
+            border: 1px solid #5a2f2f;
+            color: #ff6b6b;
+        }
+
+        .message.success {
+            background: #1f3a1f;
+            border: 1px solid #2f5a2f;
+            color: #6bff6b;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .download-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Face Mesh to OBJ</h1>
+            <p>2D fotoğraftan 3D model oluştur</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">📷 Kameradan Çek</div>
+            <div class="camera-section">
+                <video id="video" autoplay playsinline></video>
+                <div class="btn-group">
+                    <button class="btn" onclick="startCamera()">Kamera Aç</button>
+                    <button class="btn" onclick="capturePhoto()" id="captureBtn" disabled>Çek</button>
+                    <button class="btn" onclick="stopCamera()" id="stopBtn" disabled>Kapat</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">📁 Dosya Yükle</div>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Tıkla veya sürükle-bırak</div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFileSelect(event)">
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <div class="section-title">Önizleme</div>
+            <img id="previewImage" class="preview-image" alt="Preview">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="processImage()" id="processBtn" style="width: 100%;">🔄 OBJ'ye Dönüştür</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div style="color: #999; font-size: 0.85em;">İşleniyor...</div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-title">✅ Dönüşüm tamamlandı</div>
+            
+            <div class="preview-grid" id="previewGrid">
+                <div class="preview-item">
+                    <div class="preview-item-title">🖼️ Texture Önizleme</div>
+                    <img id="texturePreview" class="preview-texture" alt="Texture preview">
+                </div>
+                <div class="preview-item">
+                    <div class="preview-item-title">📄 MTL İçeriği</div>
+                    <div class="preview-text" id="mtlPreview">Yükleniyor...</div>
+                </div>
+            </div>
+            
+            <div class="preview-item" style="margin-bottom: 15px;">
+                <div class="preview-item-title">📦 OBJ Dosyası (İlk 20 satır)</div>
+                <div class="preview-text" id="objPreview">Yükleniyor...</div>
+            </div>
+            
+            <div class="download-buttons">
+                <a class="download-btn" id="downloadObj" download>📦 OBJ İndir</a>
+                <a class="download-btn" id="downloadMtl" download>📄 MTL İndir</a>
+                <a class="download-btn" id="downloadTexture" download>🖼️ Texture İndir</a>
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        let currentImageFile = null;
+        let stream = null;
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = false;
+            } catch (err) {
+                showMessage('Kamera erişimi reddedildi.', 'error');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            // Ayna efekti ile çiz
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            
+            canvas.toBlob(function(blob) {
+                const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                handleFile(file);
+            }, 'image/jpeg');
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                document.getElementById('video').srcObject = null;
+                document.getElementById('video').style.display = 'none';
+                document.getElementById('captureBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = true;
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) handleFile(file);
+        }
+
+        function handleFile(file) {
+            currentImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('previewSection').style.display = 'block';
+                document.getElementById('resultSection').style.display = 'none';
+                hideMessage();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#444';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#333';
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#333';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) handleFile(file);
+        });
+
+        async function processImage() {
+            if (!currentImageFile) {
+                showMessage('Lütfen önce bir fotoğraf yükleyin.', 'error');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('resultSection').style.display = 'none';
+            hideMessage();
+
+            const formData = new FormData();
+            formData.append('file', currentImageFile);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('downloadObj').href = data.obj_file;
+                    document.getElementById('downloadMtl').href = data.mtl_file;
+                    document.getElementById('downloadTexture').href = data.texture_file;
+                    
+                    // Önizlemeleri yükle
+                    loadPreviews(data.texture_file, data.mtl_file, data.obj_file);
+                    
+                    document.getElementById('resultSection').style.display = 'block';
+                    showMessage('Dönüşüm başarılı!', 'success');
+                } else {
+                    showMessage(data.error || 'Bir hata oluştu.', 'error');
+                }
+            } catch (error) {
+                showMessage('Sunucu hatası: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.className = `message ${type}`;
+            msg.textContent = text;
+            msg.style.display = 'block';
+        }
+
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+
+        async function loadPreviews(textureUrl, mtlUrl, objUrl) {
+            // Texture önizleme
+            const texturePreviewUrl = textureUrl + (textureUrl.includes('?') ? '&' : '?') + 'preview=true';
+            document.getElementById('texturePreview').src = texturePreviewUrl;
+            
+            // MTL önizleme
+            try {
+                const mtlPreviewUrl = mtlUrl + (mtlUrl.includes('?') ? '&' : '?') + 'preview=true';
+                const mtlResponse = await fetch(mtlPreviewUrl);
+                const mtlText = await mtlResponse.text();
+                document.getElementById('mtlPreview').textContent = mtlText || 'MTL dosyası boş';
+            } catch (e) {
+                document.getElementById('mtlPreview').textContent = 'MTL dosyası yüklenemedi';
+            }
+            
+            // OBJ önizleme (ilk 20 satır)
+            try {
+                const objPreviewUrl = objUrl + (objUrl.includes('?') ? '&' : '?') + 'preview=true';
+                const objResponse = await fetch(objPreviewUrl);
+                const objText = await objResponse.text();
+                const lines = objText.split('\n').slice(0, 20).join('\n');
+                document.getElementById('objPreview').textContent = lines + (objText.split('\n').length > 20 ? '\n...' : '');
+            } catch (e) {
+                document.getElementById('objPreview').textContent = 'OBJ dosyası yüklenemedi';
+            }
+        }
+    </script>
+</body>
+</html>
