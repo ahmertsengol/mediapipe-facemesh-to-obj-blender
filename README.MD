@@ -21,7 +21,7 @@ A Python tool that converts 2D face images to 3D OBJ models using MediaPipe's 46
   <tr>
     <td align="center">
       <strong>Generated Texture Map</strong><br/>
-      <img src="naruto/naruto.jpg" alt="Naruto Original" width="300"/>
+      <img src="naruto/naruto_texture.jpg" alt="Naruto Original" width="300"/>
     </td>
     <td align="center">
       <strong>Original 2D Image</strong><br/>
