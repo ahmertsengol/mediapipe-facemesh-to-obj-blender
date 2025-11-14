@@ -9,17 +9,26 @@ A Python tool that converts 2D face images to 3D OBJ models using MediaPipe's 46
 
 ## 🎬 Demo
 
-![Naruto 3D Model Animation](naruto/naruto.gif)
+### 3D Model Animation
 
 <div align="center">
-
-![Naruto Original](naruto/naruto.jpg)
-*Original 2D Image*
-
-![Naruto Texture](naruto/naruto.png)
-*Generated Texture Map*
-
+  <img src="naruto/naruto.gif" alt="Naruto 3D Model Animation" width="400"/>
 </div>
+
+### Input & Output Comparison
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Generated Texture Map</strong><br/>
+      <img src="naruto/naruto.jpg" alt="Naruto Original" width="300"/>
+    </td>
+    <td align="center">
+      <strong>Original 2D Image</strong><br/>
+      <img src="naruto/naruto.png" alt="Naruto Texture" width="300"/>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
